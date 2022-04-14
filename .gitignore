@@ -1,2 +1,10 @@
 *.class
 *.log
+/project/target/*
+*.cache
+*.iml
+export/*
+.idea/*
+out/*
+data/*
+/target/*
