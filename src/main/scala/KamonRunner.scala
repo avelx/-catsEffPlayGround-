@@ -1,5 +1,7 @@
 import kamon.Kamon
 
+import scala.io.StdIn.readLine
+
 object KamonRunner extends App {
   println("Kamon testing ...")
 
@@ -12,5 +14,6 @@ object KamonRunner extends App {
     Kamon.counter("app.orders.sent").withoutTags().increment()
   }
 
-  println("Exit")
+  println("Press any key ..")
+  readLine()
 }
