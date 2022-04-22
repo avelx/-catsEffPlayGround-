@@ -10,10 +10,10 @@ object KafkaConsumerApp extends KafkaConsumerHelper {
     implicit val ex = ExecutionContext.global
 
     val kafkaConsumer = new KafkaConsumer[String, String](this.getConsumerProps())
-    kafkaConsumer.subscribe(Iterable[String]("data-topic").asJavaCollection)
+    kafkaConsumer.subscribe(Iterable[String]("data-stax").asJavaCollection)
 
     while (true) {
-      val results = kafkaConsumer.poll(2000).asScala
+      val results = kafkaConsumer.poll(5000).asScala
       if (results.toList.length > 0) {
         println(s"Count: ${results.toList.length}")
         results.foreach(rec => {

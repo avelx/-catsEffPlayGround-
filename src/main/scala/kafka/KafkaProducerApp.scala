@@ -1,39 +1,31 @@
 package kafka
 
-import cats.effect.{ExitCode, IO, IOApp, Temporal}
 import cats.effect.unsafe.implicits.global
-import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
-
+import cats.effect.{ExitCode, IO, IOApp, Temporal}
+import org.apache.kafka.clients.producer.{KafkaProducer, RecordMetadata}
+import cats.implicits._
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.DurationInt
-import scala.concurrent.{ExecutionContext, Future}
 
 object KafkaProducerApp extends IOApp with KafkaProducerHelper {
+  override implicit val ex: ExecutionContext = ExecutionContext.global
 
   def run(args: List[String]): IO[ExitCode] = {
-    implicit val ex = ExecutionContext.global
-
+    val data = (250 to 395).map(IO.pure(_)).toList
     val program = for {
       producer <- IO {
         new KafkaProducer[String, String](this.getProducerProps())
       }
-      _ <- IO.fromFuture (
-        IO.blocking {
-          val futures = for {
-            id <- 10 to 50
-            future = Future {
-              producer.send(new ProducerRecord[String, String](
-              "data-topic",
-              0,
-              s"key_$id",
-              s"Record: $id"
-            ))
-          }
-        } yield future
-        Future.sequence(futures)
-      })
-    } yield Temporal[IO].sleep(5.seconds) >> IO.pure(ExitCode.Success)
-
+      id <- data.sequence
+      res <- IO.fromFuture(
+        IO {
+          sendRecord(id.toString, s"data_$id")(producer)
+        }
+      )
+      _ <- IO {
+        println(res.map(_.toString))
+      }
+    } yield Temporal[IO].sleep(500.milliseconds) >> IO.pure(ExitCode.Success)
     program.unsafeRunSync()
   }
-
 }
